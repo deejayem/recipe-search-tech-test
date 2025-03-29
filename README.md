@@ -1,5 +1,19 @@
 # recipe-search-tech-test
 
+## TODO
+- Build index (need to know where in the recipe words appear: title, intro, ingredients, method)
+- Search
+  - How should we score it? How many points for titles vs in the body? (Does the section matter: intro vs ingredients vs methods?)
+- Is stemming or lemmatisation needed?
+  - Maybe only handle plurals?
+  - Check words ending in 's' in the recipies to see if just removing 's' is sufficient
+    - Maybe only for words that appear with and without s? (Extra step and end of indexing?)
+- Should it handle synonyms? (E.g. one recipe says "cider or wine" then refers to "alcohol", others mention different types of cheese or pasta, and "meat" also appears)
+  - Should there be a lower score for a synonym?
+- Be able to read new recipes?
+- Interface (cli? repl? api?)
+- Write README/documentation (delete most of what's below here?)
+
 FIXME: my new application.
 
 ## Installation
