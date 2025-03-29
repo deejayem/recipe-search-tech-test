@@ -30,6 +30,7 @@
           ;; TODO can this be improved? (What other characters should we include?)
           ;; TODO remove 's instead? (or remove "s" after splitting)
           ;; TODO Is this the correct way to handle hyphenated words?
+          ;; TODO what about numbers? (remove, e.g. 200g)
           (re-seq #"[\w-']+" line)))
 
 (defn- index-file
@@ -39,18 +40,24 @@
   ;; TODO do we want to use .listFiles in build-index, then we need to get the name, or .list?
   ;; (Does using a File instead of the filename help with testing?)
   (with-open [rdr (io/reader file)]
-    (reduce (fn [[idx section] line]
-              ;; TODO put these in a map? (and do Introduction: -> :introduction ?)
-              (condp = line
-                "Introduction:" [idx :introduction]
-                "Ingredients:" [idx :ingredients]
-                "Method:" [idx :method]
-                [index-line (idx file section line) section]))
-            [index :title]
-            (line-seq rdr))))
+    (first (reduce (fn [[idx section] line]
+                     ;; TODO put these in a map? (and do Introduction: -> :introduction ?)
+                     (condp = line
+                       "Introduction:" [idx :introduction]
+                       "Ingredients:" [idx :ingredients]
+                       "Method:" [idx :method]
+                       [(index-line idx file section line) section]))
+                   [index :title]
+                   (line-seq rdr)))))
 
 ;; TODO move to separate ns? (E.g. index?)
 (defn build-index
   "TODO"
   []
-  (let [recipe-files (.listFiles (io/file "resources/recipes"))]))
+  (let [recipe-files (.listFiles (io/file "resources/recipes"))]
+    ;; TODO store this in an atom? (Or can we do it without one?
+    ;; (i.e. pass to a read-input function, but that might not work if we wanted to make this multi-threaded))
+    (reduce (fn [idx file]
+              (index-file idx file))
+            {}
+            recipe-files)))
