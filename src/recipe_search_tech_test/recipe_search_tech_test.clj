@@ -28,6 +28,11 @@
 ;; e.g. {"cheese" [{:id "foo.txt" :title 1 :ingredients 1 :intro 1 :method 3}]}
 ;; or {"cheese" {"foo.txt" {:title 1 :ingredients 1 :intro 1 :method 3}}}
 
+(defn- strip-ears
+  "TODO"
+  [word]
+  (str/replace word #"^'|'$" ""))
+
 (defn- index-line
   "TODO"
   [index file section line]
@@ -38,7 +43,9 @@
           ;; TODO remove 's instead? (or remove "s" after splitting)
           ;; TODO Is this the correct way to handle hyphenated words?
           ;; TODO what about numbers? (remove, e.g. 200g)
-          (re-seq #"[\w-']+" line)))
+          (->> (re-seq #"[\w-']+" line)
+               (filter #(< 1 (count %)))
+               (map strip-ears))))
 
 (defn- index-file
   "TODO"
