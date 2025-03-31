@@ -74,19 +74,23 @@
   [m]
   (into (sorted-map-by (fn [key1 key2]
                          (compare [(get m key2) key2]
-                                  [(get m key1) key1]))
-                       )
+                                  [(get m key1) key1])))
         m))
+
+(defn- calculate-score
+  "TODO"
+  [counts]
+  (reduce-kv (fn [sum section count]
+               (+ sum (* count (section-weightings section))))
+             0
+             counts))
 
 ;; TODO how much slower is it to use a sorted map here?
 (defn- score-term
   "TODO"
   [index term]
   (into {} (map (fn [[id counts]]
-                  [id (reduce-kv (fn [sum section count]
-                                   (+ sum (* count (section-weightings section))))
-                                 0
-                                 counts)])
+                  [id (calculate-score counts)])
                 (index term))))
 
 ;; TODO move to separate ns? (E.g. search?)
@@ -106,9 +110,10 @@
 (comment
 
   (def small-index {"cheese" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 3}
-                           "bar.txt" {:title 1 :ingredients 1 :introduction 1 :method 10}}
-                 "pasta" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 5}
-                          "bar.txt" {:title 1 :ingredients 1 :introduction 1 :method 2}}})
+                              "bar.txt" {:title 1 :ingredients 1 :introduction 1 :method 10}}
+                    "pasta" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 5}
+                             "bar.txt" {:title 1 :ingredients 1 :introduction 1 :method 2}}
+                    "pesto" {"baz.txt" {:title 0 :ingredients 1 :introduction 0 :method 1}}})
 
   (time (def big-index (build-index)))
 
