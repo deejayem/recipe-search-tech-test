@@ -11,6 +11,10 @@
 - Should it handle synonyms? (E.g. one recipe says "cider or wine" then refers to "alcohol", others mention different types of cheese or pasta, and "meat" also appears)
   - Should there be a lower score for a synonym?
 - How should short words be handled? (i.e. 1-2 characters) Can they just be ignored? (Check data)
+  - grep -ohe '\b\w\w\b' * |tr '[A-Z]' '[a-z]'| sort -u
+  - Words like "ox" appear in recipes, so we can't just exclude two letter words
+  - Excluding one letter words should be okay
+  - Create list of words to exclude? (Or does it not matter if these are in the index?)
 - Be able to read new recipes?
 - Interface (cli? repl? api?)
 - Write README/documentation (delete most of what's below here?)
