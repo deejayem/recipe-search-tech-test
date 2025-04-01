@@ -34,6 +34,17 @@
   [word]
   (str/replace word #"^'|'$" ""))
 
+;; TODO this is a bad name (add-number-complement add-plural-complement ?)
+(defn- add-plurals
+  "TODO"
+  [words]
+  (reduce (fn [acc word]
+            (if (str/ends-with? word "s")
+              (conj acc (str/replace word #"s$" ""))
+              (conj acc (str word "s"))))
+          words
+          words))
+
 (defn- index-line
   "TODO"
   [index file section line]
@@ -47,7 +58,8 @@
           (->> (re-seq #"[\w-']+" line)
                (map strip-ears)
                (remove #(< (count %) 2))
-               (remove sw/stop-words))))
+               (remove sw/stop-words)
+               add-plurals)))
 
 (defn- index-file
   "TODO"
