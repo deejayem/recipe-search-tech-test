@@ -29,18 +29,15 @@
 ;; e.g. {"cheese" [{:id "foo.txt" :title 1 :ingredients 1 :intro 1 :method 3}]}
 ;; or {"cheese" {"foo.txt" {:title 1 :ingredients 1 :intro 1 :method 3}}}
 
-(defn- strip-ears
-  "TODO"
-  [word]
-  (str/replace word #"^'|'$" ""))
-
 (defn- normalise
   "TODO"
   [word]
-  (str/lower-case (strip-ears word)))
+  (-> word
+      str/lower-case
+      ;; remove ' from the beginning or end of a word, and 's from the end
+      (str/replace #"^'|'$|'s$" "")))
 
-;; TODO this is a bad name (add-number-complement add-plural-complement ?)
-(defn- add-plurals
+(defn- add-opposite-pluralities
   "TODO"
   [words]
   (reduce (fn [acc word]
@@ -64,7 +61,7 @@
             (->> (re-seq #"[\w-']+" line)
                  (remove #(< (count %) 2))
                  (remove sw/stop-words)
-                 add-plurals))))
+                 add-opposite-pluralities))))
 
 (defn- index-file
   "TODO"
@@ -121,7 +118,7 @@
   ;; TODO what's the best way to split words? (What if we just use (str/split query #"\s+") ?)
   (let [terms (re-seq #"[\w-']+" query)
         candidates (->> terms
-                        (map str/lower-case)
+                        (map normalise)
                         (map (partial score-term index))
                         (apply merge-with +))]
     (->> candidates
