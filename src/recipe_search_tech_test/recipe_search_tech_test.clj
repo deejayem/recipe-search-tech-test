@@ -139,6 +139,17 @@
   (println "  reindex - rebuilds the search index (in case new recipes have been added)")
   (println "  help - display this help message\n"))
 
+(defn- handle-help
+  [index]
+  (print-help)
+  index)
+
+(defn- handle-invalid-input
+  [index input]
+  (println "Input" input "is invalid\n")
+  (print-help)
+  index)
+
 (defn- prompt-user
   "Displays a prompt and returns the user input."
   ([]
@@ -159,7 +170,8 @@
       ;; rebuilding from scratch is quick, otherwise we could just add the new files
       "reindex" (handle-build-index)
       "search" (handle-search index args)
-      "help"  (print-help))))
+      "help"  (handle-help index)
+      (handle-invalid-input index input))))
 
 (defn -main
   "Application entrypoint that reads input and controls the program flow."
