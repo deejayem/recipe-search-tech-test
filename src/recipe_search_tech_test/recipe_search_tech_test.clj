@@ -4,20 +4,11 @@
             [clojure.string :as str]
             [recipe-search-tech-test.stop-words :as sw]))
 
-;; TODO define scores
-;; TODO define sections?
-;; TODO plurals, synonyms
-;; TODO exclude short words? (Or score them lower?)
-
-;; TODO what values should these have?
 (def ^:private section-weightings
   {:title 100
    :introduction 2
    :ingredients 2
    :method 2})
-
-;; e.g. {"cheese" [{:id "foo.txt" :title 1 :ingredients 1 :intro 1 :method 3}]}
-;; or {"cheese" {"foo.txt" {:title 1 :ingredients 1 :intro 1 :method 3}}}
 
 (defn- normalise
   "TODO"
@@ -46,7 +37,6 @@
               (update-in idx [(normalise word) filename section] (fnil inc 0)))
             index
             ;; TODO can this be improved? (What other characters should we include?)
-            ;; TODO remove 's instead? (or remove "s" after splitting)
             ;; TODO Is this the correct way to handle hyphenated words?
             ;; TODO what about numbers? (remove, e.g. 200g)
             (->> (re-seq #"[\w-']+" line)
@@ -59,8 +49,7 @@
   [index file]
   (with-open [rdr (io/reader file)]
     (first (reduce (fn [[idx section] line]
-                     ;; TODO put these in a map? (and do Introduction: -> :introduction ?)
-                     (condp = line
+                     (case line
                        "Introduction:" [idx :introduction]
                        "Ingredients:" [idx :ingredients]
                        "Method:" [idx :method]
@@ -69,6 +58,7 @@
                    (line-seq rdr)))))
 
 ;; TODO move to separate ns? (E.g. index?)
+;; TODO describe index format: {"cheese" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 3}}}
 (defn build-index
   "TODO"
   []
@@ -94,10 +84,10 @@
              0
              counts))
 
-;; TODO how much slower is it to use a sorted map here?
 (defn- score-term
   "TODO"
   [index term]
+  ;; We could use a sorted map here, but it's quicker to do the sorting later
   (into {} (map (fn [[id counts]]
                   [id (calculate-score counts)]))
         (index term)))
