@@ -135,7 +135,7 @@
   []
   (println "Please enter your command at the prompt (>)")
   (println "Commands:")
-  (println "  search <query> - search for query (e.g. search broccoli silton soup)")
+  (println "  search <query> - search for query (e.g. search broccoli stilton soup)")
   (println "  reindex - rebuilds the search index (in case new recipes have been added)")
   (println "  help - display this help message\n"))
 
