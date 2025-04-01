@@ -121,6 +121,7 @@
   ;; TODO what's the best way to split words? (What if we just use (str/split query #"\s+") ?)
   (let [terms (re-seq #"[\w-']+" query)
         candidates (->> terms
+                        (map str/lower-case)
                         (map (partial score-term index))
                         (apply merge-with +))]
     (->> candidates
