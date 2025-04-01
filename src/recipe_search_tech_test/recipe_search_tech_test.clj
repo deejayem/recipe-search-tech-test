@@ -120,8 +120,11 @@
 (defn- handle-search
   "TODO."
   [index query]
-  ;; TODO print more nicely
-  (println (search index query))
+  (let [results (search index query)]
+    (println "Top" (count results) "results:")
+    (doseq [result results]
+      (println result))
+    (println ""))
   index)
 
 (defn- handle-build-index
