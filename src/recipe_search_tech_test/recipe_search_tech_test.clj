@@ -1,7 +1,8 @@
 (ns recipe-search-tech-test.recipe-search-tech-test
   (:gen-class)
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [recipe-search-tech-test.stop-words :as sw]))
 
 (defn greet
   "Callable entry point to the application."
@@ -44,8 +45,9 @@
           ;; TODO Is this the correct way to handle hyphenated words?
           ;; TODO what about numbers? (remove, e.g. 200g)
           (->> (re-seq #"[\w-']+" line)
-               (filter #(< 1 (count %)))
-               (map strip-ears))))
+               (map strip-ears)
+               (remove #(< (count %) 2))
+               (remove sw/stop-words))))
 
 (defn- index-file
   "TODO"
