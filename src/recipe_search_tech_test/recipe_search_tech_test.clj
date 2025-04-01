@@ -4,16 +4,6 @@
             [clojure.string :as str]
             [recipe-search-tech-test.stop-words :as sw]))
 
-(defn greet
-  "Callable entry point to the application."
-  [data]
-  (println (str "Hello, " (or (:name data) "World") "!")))
-
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (greet {:name (first args)}))
-
 ;; TODO define scores
 ;; TODO define sections?
 ;; TODO plurals, synonyms
@@ -125,6 +115,64 @@
          sorted-map-by-value
          keys
          (take 10))))
+
+(defn- handle-search
+  "TODO."
+  [index query]
+  ;; TODO print more nicely
+  (println (search index query))
+  index)
+
+(defn- handle-build-index
+  "TODO."
+  []
+  (print "Building index... ")
+  (flush)
+  (let [index (build-index)]
+    (println " done.\n")
+    index))
+
+(defn- get-user-input
+  "Reads user input from the terminal."
+  []
+  (str/trim (read-line)))
+
+(defn- print-help
+  []
+  (println "Please enter your command at the prompt (>)")
+  (println "Commands:")
+  (println "  search <query> - search for query (e.g. search broccoli silton soup)")
+  (println "  reindex - rebuilds the search index (in case new recipes have been added)")
+  (println "  help - display this help message\n"))
+
+(defn- prompt-user
+  "Displays a prompt and returns the user input."
+  ([]
+   (prompt-user false))
+  ([display-help?]
+   (when display-help?
+     (println "Welcome to Recipe Search")
+     (print-help))
+   (print "> ")
+   (flush)
+   (get-user-input)))
+
+(defn- process-input
+  "Processes the command entered by the user."
+  [index input]
+  (let [[_ command args] (re-matches #"(\w+)\s*(.*)" input)]
+    (case command
+      "reindex" (handle-build-index)
+      "search" (handle-search index args)
+      "help"  (print-help))))
+
+(defn -main
+  "Application entrypoint that reads input and controls the program flow."
+  [& _args]
+  (loop [index (handle-build-index)
+         input (prompt-user true)]
+    (when-not (= "exit" input)
+      (recur (process-input index input) (prompt-user)))))
 
 (comment
 
