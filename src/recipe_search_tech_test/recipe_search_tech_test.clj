@@ -25,6 +25,7 @@
   (-> word
       str/lower-case
       ;; remove ' from the beginning or end of a word, and 's from the end
+      ;; (' should be the only non-alphanumeric character left after splitting)
       (str/replace #"^'|'$|'s$" "")))
 
 (defn- add-opposite-pluralities
@@ -162,6 +163,7 @@
   [index input]
   (let [[_ command args] (re-matches #"(\w+)\s*(.*)" input)]
     (case command
+      ;; rebuilding from scratch is quick, otherwise we could just add the new files
       "reindex" (handle-build-index)
       "search" (handle-search index args)
       "help"  (print-help))))
