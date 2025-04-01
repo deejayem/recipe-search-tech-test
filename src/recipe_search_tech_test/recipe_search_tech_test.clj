@@ -111,9 +111,11 @@
   "TODO."
   [index query]
   (let [results (search index query)]
-    (println "Top" (count results) "results:")
-    (doseq [result results]
-      (println result))
+    (if (empty? results)
+      (println "No results found")
+      (do (println "Top" (count results) "results:")
+          (doseq [result results]
+            (println result))))
     (println ""))
   index)
 
