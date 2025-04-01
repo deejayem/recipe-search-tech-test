@@ -34,6 +34,11 @@
   [word]
   (str/replace word #"^'|'$" ""))
 
+(defn- normalise
+  "TODO"
+  [word]
+  (str/lower-case (strip-ears word)))
+
 ;; TODO this is a bad name (add-number-complement add-plural-complement ?)
 (defn- add-plurals
   "TODO"
@@ -48,25 +53,22 @@
 (defn- index-line
   "TODO"
   [index file section line]
-  (reduce (fn [idx word]
-            (update-in idx [(str/lower-case word) (.getName file) section] (fnil inc 0)))
-          index
-          ;; TODO can this be improved? (What other characters should we include?)
-          ;; TODO remove 's instead? (or remove "s" after splitting)
-          ;; TODO Is this the correct way to handle hyphenated words?
-          ;; TODO what about numbers? (remove, e.g. 200g)
-          (->> (re-seq #"[\w-']+" line)
-               (map strip-ears)
-               (remove #(< (count %) 2))
-               (remove sw/stop-words)
-               add-plurals)))
+  (let [filename (.getName file)]
+    (reduce (fn [idx word]
+              (update-in idx [(normalise word) filename section] (fnil inc 0)))
+            index
+            ;; TODO can this be improved? (What other characters should we include?)
+            ;; TODO remove 's instead? (or remove "s" after splitting)
+            ;; TODO Is this the correct way to handle hyphenated words?
+            ;; TODO what about numbers? (remove, e.g. 200g)
+            (->> (re-seq #"[\w-']+" line)
+                 (remove #(< (count %) 2))
+                 (remove sw/stop-words)
+                 add-plurals))))
 
 (defn- index-file
   "TODO"
-  ;; TODO ^File ?
   [index file]
-  ;; TODO do we want to use .listFiles in build-index, then we need to get the name, or .list?
-  ;; (Does using a File instead of the filename help with testing?)
   (with-open [rdr (io/reader file)]
     (first (reduce (fn [[idx section] line]
                      ;; TODO put these in a map? (and do Introduction: -> :introduction ?)
@@ -83,8 +85,6 @@
   "TODO"
   []
   (let [recipe-files (.listFiles (io/file "resources/recipes"))]
-    ;; TODO store this in an atom? (Or can we do it without one?
-    ;; (i.e. pass to a read-input function, but that might not work if we wanted to make this multi-threaded))
     (reduce (fn [idx file]
               (index-file idx file))
             {}
