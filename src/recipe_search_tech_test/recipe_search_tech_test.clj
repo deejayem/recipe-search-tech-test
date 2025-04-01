@@ -111,8 +111,8 @@
   "TODO"
   [index term]
   (into {} (map (fn [[id counts]]
-                  [id (calculate-score counts)])
-                (index term))))
+                  [id (calculate-score counts)]))
+        (index term)))
 
 ;; TODO move to separate ns? (E.g. search?)
 (defn search
