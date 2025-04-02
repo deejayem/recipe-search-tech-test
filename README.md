@@ -8,7 +8,8 @@ The simplest way to run the application is to execute the following, in the proj
 
   $ clojure -X:run
 
-and then follow the instructions (or see the Example section of this README)
+Then you can search using `search <search query>` and exit using `exit`, as well as using the other commands
+explained by the initial help message. See also the [Examples section](#Examples) below.
 
 Alternatively, you can build and run an uberjar:
 
@@ -50,7 +51,7 @@ takes 1-3ms (but sometimes up to 8). See the `comment` block in `recipe-search-t
 
 ## Frequencies
 
-One obvious question about the implementation, is why I didn't use `clojure.core/frequencies`, given that it seems the
+One obvious question about the implementation is, "Why I didn't use `clojure.core/frequencies`?" given that it seems the
 obvious choice for indexing the files.
 
 Here is an alternate implementation of `reciple-search-tech-test.index/index-line` that uses it:
@@ -70,10 +71,10 @@ Here is an alternate implementation of `reciple-search-tech-test.index/index-lin
                    (update-vals (partial * weighting))))))
 ```
 
-I think that this is less readable than the existing implementation. Probably there is room for improving the
-performance of my current version (using a transient map, as `frequencies` does), or a nicer way of using frequencies
-(my way of handling sections, and processing the files one line at a time didn't help here), but indexing is already
-fairly fast, and I didn't have time to try to improve it any more.
+I think that this is less readable than the existing implementation. There is probably room for improving the
+performance of my current version (e.g. using a transient map, as `frequencies` does), or a nicer way of using
+frequencies (my way of handling sections, and processing the files one line at a time didn't help here), but indexing
+is already fairly fast, and I didn't have time to try to improve it any more.
 
 ## Stop Words
 
@@ -94,4 +95,11 @@ score words found in the ingredients slightly higher than words found in the oth
 I thought there may be false positives elsewhere. E.g. I can imagine an introduction that says "Are you fed up of having
 sandwiches for lunch, then try this amazing soup!" or an method that says "Peel the carrots with a potato peeler." In
 these two examples, neither sandwiches or potatoes are very relevant to the recipe.
+
+## Updating the index
+I decided that trying to update the index should just build the index again from scratch. It's straightforward to pull
+the filenames out of the existing index (`(->> an-index vals (mapcat keys) set)`), and then filter the list of files
+using this set. That means that we could pass an existing index to the `build-index` function, and only index any new
+files. However, that wouldn't take into account that existing files may have been modified, so keeping things simple
+seemed best.
 
