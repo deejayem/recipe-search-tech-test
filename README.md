@@ -18,9 +18,9 @@ Alternatively, you can build and run an uberjar:
 Or run `(-main)` in the `recipe-search-tech-test` namespace, or call `index/build-index` and `index/search` in there,
 as shown in the `comment` block.
 
-## Example
+## Examples
 
-Here is an example of a search being done in the application:
+Here is are some examples of a searches being done in the application:
 
   > search broccoli stilton soup
   Top 10 results:
@@ -34,6 +34,14 @@ Here is an example of a search being done in the application:
   orange-baked-chicken-with-griddled-purpl.txt
   curried-broccoli-quinoa.txt
   chimichurri-steak-with-potatoes-psb.txt
+
+  > search pithivier
+  Top 2 results:
+  squash-chard-stilton-pithivier.txt
+  leek-and-smoked-cheese-pithivier.txt
+
+  > search emacs
+  No results found
 
 ## Performance
 
