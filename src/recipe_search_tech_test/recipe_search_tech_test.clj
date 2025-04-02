@@ -68,7 +68,8 @@
   [index input]
   (let [[_ command args] (re-matches #"(\w+)\s*(.*)" input)]
     (case command
-      ;; rebuilding from scratch is quick, otherwise we could just index the new files
+      ;; Rebuild the index from scratch on "reindex" as it's still fairly quick
+      ;; and we don't want to have to worry about checking if files have been modified.
       "reindex" (handle-build-index)
       "search" (handle-search index args)
       "help"  (handle-help index)

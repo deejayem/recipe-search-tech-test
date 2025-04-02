@@ -1315,14 +1315,18 @@
           words))
 
 (defn parse-text
-  "Given a line of text, split it into lower case words, removing stop words, short words, and all
-  non-alphanumeric characters except hyphens and apostrophes. 's is removed from the end of words,
+  "Given a line of text, split it into words, convert to lower case, remove almost all non-alphanumeric characters,
+  and remove:
+  - stop words,
+  - one-letter words,
+  - anything left over of zero length
+  The non-numeric characters that are not removed are hyphens and apostrophes, but 's is removed from the end of words,
   and ' is removed when it functions as single quotation marks."
   [text]
   ;; Using transducers seems to speed up indexing by around 15-20%
   (sequence (comp
              (map str/lower-case)
              (map #(str/replace % #"^'|'$|'s$" ""))
-             (remove #(= (count %) 1))
+             (remove #(< (count %) 2))
              (remove stop-words))
             (re-seq #"[\w-']+" text)))

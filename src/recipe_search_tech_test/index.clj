@@ -10,7 +10,7 @@
    :ingredients 2
    :method 1})
 
-;;; Functions for building the index
+;;; Functions for building the index (index format is explained in the docstring of build-index)
 
 (defn- index-line
   "Add the words in a line to the index, based on the current file and section (title, introduction, etc)."
@@ -25,7 +25,7 @@
                 text/add-opposite-pluralities))))
 
 ;; The section headings are predictable, otherwise we could create a more complex map
-;; with the weightings and headings for each section.
+;; with the weightings and headings for each section (or have two separate maps).
 ;; The map returned will contain :title, the heading for which does not appear in the
 ;; recipes (as it's just the first line), but having it in the map doesn't do any harm.
 (defn- get-section-headings
