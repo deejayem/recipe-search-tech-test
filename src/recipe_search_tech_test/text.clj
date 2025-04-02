@@ -1305,7 +1305,7 @@
   "Naive version of adding the singular version of all plural words, and vice versa, based on the
   incorrect/simplistic assumption that an 's' can simply be added or removed. This doesn't work for
   all words, and creates non-existent words in the index, but the latter shouldn't matter, if we assume
-  that people won't search for them. A proper implementation would use stemming or lemmaization."
+  that people won't search for them. A proper implementation would use stemming or lemmatization."
   [words]
   (reduce (fn [acc word]
             (if (str/ends-with? word "s")
