@@ -2,7 +2,7 @@
   (:gen-class)
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [recipe-search-tech-test.stop-words :as sw]))
+            [recipe-search-tech-test.text :as text]))
 
 (def ^:private section-weightings
   {:title 20
@@ -25,28 +25,6 @@
                       identity))
         (keys section-weightings)))
 
-(defn- normalise
-  "Convert a search term into a normalised form."
-  [word]
-  (-> word
-      str/lower-case
-      ;; Remove ' from the beginning or end of a word, and 's from the end.
-      ;; ' should be the only non-alphanumeric character left after splitting.
-      (str/replace #"^'|'$|'s$" "")))
-
-(defn- add-opposite-pluralities
-  "Naive version of adding the singular version of all plural words, and vice versa, based on the
-  incorrect/simplistic assumption that an 's' can simply be added or removed. This doesn't work for
-  all words, and creates non-existent words in the index, but the latter shouldn't matter, if we assume
-  that people won't search for them."
-  [words]
-  (reduce (fn [acc word]
-            (if (str/ends-with? word "s")
-              (conj acc (str/replace word #"s$" ""))
-              (conj acc (str word "s"))))
-          words
-          words))
-
 (defn- index-line
   "Add the words in a line to the index, based on the current file and section (title, introduction, etc)."
   [index file section line]
@@ -54,13 +32,9 @@
     (reduce (fn [idx word]
               (update-in idx [(normalise word) filename] (fnil (partial + (section-weightings section)) 0)))
             index
-            ;; TODO can this be improved? (What other characters should we include?)
-            ;; TODO Is this the correct way to handle hyphenated words?
-            ;; TODO what about numbers? (remove, e.g. 200g)
-            (->> (re-seq #"[\w-']+" line)
-                 (remove #(< (count %) 2))
-                 (remove sw/stop-words)
-                 add-opposite-pluralities))))
+            (-> line
+                text/parse-text
+                text/add-opposite-pluralities))))
 
 (defn- index-file
   "Index a file."
@@ -101,10 +75,8 @@
 (defn search
   "Performs a search for `query` in `index`"
   [index query]
-  ;; TODO what's the best way to split words? (What if we just use (str/split query #"\s+") ?)
-  (let [terms (re-seq #"[\w-']+" query)
+  (let [terms (text/parse-text query)
         candidates (->> terms
-                        (map normalise)
                         (map index)
                         (apply merge-with +))]
     (->> candidates

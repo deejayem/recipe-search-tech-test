@@ -1,7 +1,7 @@
-(ns recipe-search-tech-test.stop-words)
+(ns recipe-search-tech-test.text
+  (:require [clojure.string :as str]))
 
 ;; Taken from https://github.com/Alir3z4/stop-words/blob/master/english.txt
-
 (def stop-words #{"'ll"
                   "'tis"
                   "'twas"
@@ -1300,3 +1300,27 @@
                   "zero"
                   "zm"
                   "zr"})
+
+(defn add-opposite-pluralities
+  "Naive version of adding the singular version of all plural words, and vice versa, based on the
+  incorrect/simplistic assumption that an 's' can simply be added or removed. This doesn't work for
+  all words, and creates non-existent words in the index, but the latter shouldn't matter, if we assume
+  that people won't search for them."
+  [words]
+  (reduce (fn [acc word]
+            (if (str/ends-with? word "s")
+              (conj acc (str/replace word #"s$" ""))
+              (conj acc (str word "s"))))
+          words
+          words))
+
+(defn parse-text
+  "Given a line of text, split it into lower case words, removing stop words, short words, and all
+  non-alphanumeric characters except hyphens and apostrophes. 's is removed from the end of words,
+  and ' is removed when it functions as single quotation marks."
+  [text]
+  (->> (re-seq #"[\w-']+" text)
+       (map str/lower-case)
+       (map #(str/replace % #"^'|'$|'s$" ""))
+       (remove #(< (count %) 2))
+       (remove stop-words)))
