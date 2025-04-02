@@ -1319,8 +1319,10 @@
   non-alphanumeric characters except hyphens and apostrophes. 's is removed from the end of words,
   and ' is removed when it functions as single quotation marks."
   [text]
-  (->> (re-seq #"[\w-']+" text)
-       (map str/lower-case)
-       (map #(str/replace % #"^'|'$|'s$" ""))
-       (remove #(< (count %) 2))
-       (remove stop-words)))
+  ;; Using transducers seems to speed up indexing by around 15-20%
+  (sequence (comp
+             (map str/lower-case)
+             (map #(str/replace % #"^'|'$|'s$" ""))
+             (remove #(= (count %) 1))
+             (remove stop-words))
+            (re-seq #"[\w-']+" text)))
