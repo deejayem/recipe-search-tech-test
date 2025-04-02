@@ -52,7 +52,7 @@
   [index file section line]
   (let [filename (.getName file)]
     (reduce (fn [idx word]
-              (update-in idx [(normalise word) filename section] (fnil inc 0)))
+              (update-in idx [(normalise word) filename] (fnil (partial + (section-weightings section)) 0)))
             index
             ;; TODO can this be improved? (What other characters should we include?)
             ;; TODO Is this the correct way to handle hyphenated words?
@@ -76,14 +76,12 @@
                      (line-seq rdr))))))
 
 ;; TODO move to separate ns? (E.g. index?)
-;; TODO apply the sum in the index?
 (defn build-index
   "Build an index, from all of the files in the resources/recipes directory.
 
-  The index is a nested map, with the outer keys being words in the recipes, the keys the next level down being
-  filenames (recipe ids), and the keys in the inner map being the sections of the recipes. Finally the values of this
-  inner map are the number of times the word appears in that section of that file, e.g.
-  {\"stilton\" {\"broccoli-soup-with-stilton.txt\" {:title 1, :introduction 1, :ingredients 1, :method 2}}}"
+  The index is a nested map, with the outer keys being in the recipes, the keys of the inner map being the filenames
+  (recipe ids), and the values being the score for that word in that file, e.g.
+  {\"stilton\" {\"broccoli-soup-with-stilton.txt\" 24}}"
   []
   (let [recipe-files (.listFiles (io/file "resources/recipes"))]
     (reduce (fn [idx file]
@@ -99,22 +97,6 @@
                                   [(get m key1) key1])))
         m))
 
-(defn- calculate-score
-  "Calculates the weighted score for a map of section counts."
-  [counts]
-  (reduce-kv (fn [sum section count]
-               (+ sum (* count (section-weightings section))))
-             0
-             counts))
-
-(defn- score-term
-  "Calculates the score for a search term, using the index provided."
-  [index term]
-  ;; We could use a sorted map here, but it's quicker to do the sorting later
-  (into {} (map (fn [[id counts]]
-                  [id (calculate-score counts)]))
-        (index term)))
-
 ;; TODO move to separate ns? (E.g. search?)
 (defn search
   "Performs a search for `query` in `index`"
@@ -123,7 +105,7 @@
   (let [terms (re-seq #"[\w-']+" query)
         candidates (->> terms
                         (map normalise)
-                        (map (partial score-term index))
+                        (map index)
                         (apply merge-with +))]
     (->> candidates
          sorted-map-by-value
