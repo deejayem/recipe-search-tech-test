@@ -56,8 +56,8 @@
 (defn build-index
   "Build an index, from all of the files in the resources/recipes directory.
 
-  The index is a nested map, with the outer keys being in the recipes, the keys of the inner map being the filenames
-  (recipe ids), and the values being the score for that word in that file, e.g.
+  The index is a nested map, with the outer keys being the words in the recipes, the keys of the inner
+  map being the filenames (recipe ids), and the values being the score for that word in that file, e.g.
   {\"stilton\" {\"broccoli-soup-with-stilton.txt\" 24}}"
   []
   (let [recipe-files (.listFiles (io/file "resources/recipes"))]
