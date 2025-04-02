@@ -11,7 +11,7 @@
    :method 2})
 
 (defn- normalise
-  "TODO"
+  "Convert a search term into a normalised form."
   [word]
   (-> word
       str/lower-case
@@ -20,7 +20,10 @@
       (str/replace #"^'|'$|'s$" "")))
 
 (defn- add-opposite-pluralities
-  "TODO"
+  "Naive version of adding the singular version of all plural words, and vice versa, based on the
+  incorrect/simplistic assumption that an 's' can simply be added or removed. This doesn't work for
+  all words, and creates non-existent words in the index, but the latter shouldn't matter, if we assume
+  that people won't search for them."
   [words]
   (reduce (fn [acc word]
             (if (str/ends-with? word "s")
@@ -30,7 +33,7 @@
           words))
 
 (defn- index-line
-  "TODO"
+  "Add the words in a line to the index, based on the current file and section (title, introduction, etc)."
   [index file section line]
   (let [filename (.getName file)]
     (reduce (fn [idx word]
@@ -45,7 +48,7 @@
                  add-opposite-pluralities))))
 
 (defn- index-file
-  "TODO"
+  "Index a file."
   [index file]
   (with-open [rdr (io/reader file)]
     (first (reduce (fn [[idx section] line]
@@ -58,9 +61,14 @@
                    (line-seq rdr)))))
 
 ;; TODO move to separate ns? (E.g. index?)
-;; TODO describe index format: {"cheese" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 3}}}
+;; TODO apply the sum in the index?
 (defn build-index
-  "TODO"
+  "Build an index, from all of the files in the resources/recipes directory.
+
+  The index is a nested map, with the outer keys being words in the recipes, the keys the next level down being
+  filenames (recipe ids), and the keys in the inner map being the sections of the recipes. Finally the values of this
+  inner map are the number of times the word appears in that section of that file, e.g.
+  {\"stilton\" {\"broccoli-soup-with-stilton.txt\" {:title 1, :introduction 1, :ingredients 1, :method 2}}}"
   []
   (let [recipe-files (.listFiles (io/file "resources/recipes"))]
     (reduce (fn [idx file]
@@ -69,7 +77,7 @@
             recipe-files)))
 
 (defn- sorted-map-by-value
-  "TODO"
+  "Converts into a sorted map, sorted by value, and then key."
   [m]
   (into (sorted-map-by (fn [key1 key2]
                          (compare [(get m key2) key2]
@@ -77,7 +85,7 @@
         m))
 
 (defn- calculate-score
-  "TODO"
+  "Calculates the weighted score for a map of section counts."
   [counts]
   (reduce-kv (fn [sum section count]
                (+ sum (* count (section-weightings section))))
@@ -85,7 +93,7 @@
              counts))
 
 (defn- score-term
-  "TODO"
+  "Calculates the score for a search term, using the index provided."
   [index term]
   ;; We could use a sorted map here, but it's quicker to do the sorting later
   (into {} (map (fn [[id counts]]
@@ -94,7 +102,7 @@
 
 ;; TODO move to separate ns? (E.g. search?)
 (defn search
-  "TODO"
+  "Performs a search for `query` in `index`"
   [index query]
   ;; TODO what's the best way to split words? (What if we just use (str/split query #"\s+") ?)
   (let [terms (re-seq #"[\w-']+" query)
@@ -108,7 +116,7 @@
          (take 10))))
 
 (defn- handle-search
-  "TODO."
+  "Handler function for searches."
   [index query]
   (let [results (search index query)]
     (if (empty? results)
@@ -120,7 +128,7 @@
   index)
 
 (defn- handle-build-index
-  "TODO."
+  "Handler function for building an index."
   []
   (print "Building index... ")
   (flush)
@@ -134,6 +142,7 @@
   (str/trim (read-line)))
 
 (defn- print-help
+  "Prints the help/usage message."
   []
   (println "Please enter your command at the prompt (>)")
   (println "Commands:")
@@ -142,11 +151,13 @@
   (println "  help - display this help message\n"))
 
 (defn- handle-help
+  "Handler function for printing the help message."
   [index]
   (print-help)
   index)
 
 (defn- handle-invalid-input
+  "Handler function for responding to invalid input."
   [index input]
   (println "Input" input "is invalid\n")
   (print-help)
