@@ -26,7 +26,7 @@
       (do (println "Top" (count results) "results:")
           (doseq [result results]
             (println result))))
-    (println ""))
+    (println))
   index)
 
 (defn- handle-build-index
