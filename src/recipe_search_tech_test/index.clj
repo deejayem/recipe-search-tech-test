@@ -69,7 +69,7 @@
 ;;; Functions for searching the index
 
 (defn- sorted-map-by-value
-  "Converts into a sorted map, sorted by value, and then key."
+  "Returns a sorted map, sorted by value and then key."
   [m]
   (into (sorted-map-by (fn [key1 key2]
                          (compare [(get m key2) key2]
