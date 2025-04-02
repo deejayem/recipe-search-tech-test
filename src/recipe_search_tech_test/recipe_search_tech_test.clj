@@ -13,10 +13,11 @@
 
 ;; The section headings are predictable, otherwise we could create a more complex map
 ;; with the weightings and headings for each section.
-;; The map returnign will contain :title, the heading for which does not appear in the
+;; The map returned will contain :title, the heading for which does not appear in the
 ;; recipes (as it's just the first line), but having it in the map doesn't do any harm.
 (defn- get-section-headings
-  "Returns a map from the section heading strings to the section keys."
+  "Returns a map from the section heading text to the section keys.
+  e.g. \"Introduction:\" -> :introduction"
   []
   (into {} (map (juxt #(-> %
                            name
