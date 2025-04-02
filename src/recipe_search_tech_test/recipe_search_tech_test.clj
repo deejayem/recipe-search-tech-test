@@ -5,10 +5,11 @@
             [recipe-search-tech-test.stop-words :as sw]))
 
 (def ^:private section-weightings
-  {:title 100
-   :introduction 2
+  {:title 20
+   :introduction 1
+   ;; Score ingredients more highly, as there is less chance of false positives here
    :ingredients 2
-   :method 2})
+   :method 1})
 
 (defn- normalise
   "Convert a search term into a normalised form."
