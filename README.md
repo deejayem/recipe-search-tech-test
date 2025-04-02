@@ -70,10 +70,10 @@ Here is an alternate implementation of `reciple-search-tech-test.index/index-lin
                    (update-vals (partial * weighting))))))
 ```
 
-I think that this is less readable than the existing implementation, although it is slightly faster. Probably there is
-room for improving the performance of my current version (using a transient map, as `frequencies` does), or a nicer way
-of using frequencies (my way of handling sections, and processing the files one line at a time didn't help here),
-but indexing is already fairly fast, and I didn't have time to try to improve it any more.
+I think that this is less readable than the existing implementation. Probably there is room for improving the
+performance of my current version (using a transient map, as `frequencies` does), or a nicer way of using frequencies
+(my way of handling sections, and processing the files one line at a time didn't help here), but indexing is already
+fairly fast, and I didn't have time to try to improve it any more.
 
 ## Stop Words
 
