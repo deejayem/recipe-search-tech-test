@@ -1,29 +1,6 @@
 # recipe-search-tech-test
 
-## TODO
-- Build index (need to know where in the recipe words appear: title, intro, ingredients, method)
-- Search
-  - How should we score it? How many points for titles vs in the body? (Does the section matter: intro vs ingredients vs methods?)
-- Is stemming or lemmatisation needed?
-  - Maybe only handle plurals?
-  - Check words ending in 's' in the recipies to see if just removing 's' is sufficient
-    - Maybe only for words that appear with and without s? (Extra step and end of indexing?)
-- Should it handle synonyms? (E.g. one recipe says "cider or wine" then refers to "alcohol", others mention different types of cheese or pasta, and "meat" also appears)
-  - Should there be a lower score for a synonym?
-- How should short words be handled? (i.e. 1-2 characters) Can they just be ignored? (Check data)
-  - grep -ohe '\b\w\w\b' * |tr '[A-Z]' '[a-z]'| sort -u
-  - Words like "ox" appear in recipes, so we can't just exclude two letter words
-  - Excluding one letter words should be okay
-  - Create list of words to exclude? (Or does it not matter if these are in the index?)
-- Be able to read new recipes?
-- Interface (cli? repl? api?)
-- Write README/documentation (delete most of what's below here?)
-
-FIXME: my new application.
-
-## Installation
-
-Download from https://github.com/recipe-search-tech-test/recipe-search-tech-test
+Solution to the Recipe Search test, by David Morgan
 
 ## Usage
 
@@ -31,30 +8,82 @@ The simplest way to run the application is to execute the following, in the proj
 
   $ clojure -X:run
 
+and then follow the instructions (or see the Example section of this README)
+
 Alternatively, you can build and run an uberjar:
 
   $ clojure -T:build ci
   $ java -jar target/net.clojars.recipe-search-tech-test/recipe-search-tech-test-0.1.0-SNAPSHOT.jar
 
-Or run `(-main)` in the `recipe-search-tech-test` namespace.
+Or run `(-main)` in the `recipe-search-tech-test` namespace, or call `index/build-index` and `index/search` in there,
+as shown in the `comment` block.
 
-                                     If you don't want the `pom.xml` file in your project, you can remove it. The `ci` task will
-still generate a minimal `pom.xml` as part of the `uber` task, unless you remove `version`
-from `build.clj`.
+## Example
 
-## Options
+Here is an example of a search being done in the application:
 
-FIXME: listing of options this app accepts.
+  > search broccoli stilton soup
+  Top 10 results:
+  broccoli-soup-with-stilton.txt
+  broccoli-bulghur-stilton-grapes.txt
+  cauliflower-stilton-soup.txt
+  broccoli-soup-with-gorgonzola.txt
+  purple-sprouting-broccoli-bean-and-pasta.txt
+  broccoli-bean-pasta-soup.txt
+  toasted-broccoli-with-sesame-garlic-soy.txt
+  orange-baked-chicken-with-griddled-purpl.txt
+  curried-broccoli-quinoa.txt
+  chimichurri-steak-with-potatoes-psb.txt
 
-## Examples
+## Performance
 
-...
+On my laptop (an i5 from 2020!), indexing takes around 2-3 seconds, and searching for "broccoli stilton soup" usually
+takes 1-3ms (but sometimes up to 8). See the `comment` block in `recipe-search-tech-test` for examples.
 
-### Bugs
+## Frequencies
 
-...
+One obvious question about the implementation, is why I didn't use `clojure.core/frequencies`, given that it seems the
+obvious choice for indexing the files.
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+Here is an alternate implementation of `reciple-search-tech-test.index/index-line` that uses it:
+
+``` clojure
+(defn- index-line
+  [index file section line]
+  (let [filename (.getName file)
+        weighting (section-weightings section)]
+    (reduce-kv (fn [idx word score]
+                 (update-in idx [word filename] (fnil (partial + score) 0)))
+               index
+               (-> line
+                   text/parse-text
+                   text/add-opposite-pluralities
+                   frequencies
+                   (update-vals (partial * weighting))))))
+```
+
+I think that this is less readable than the existing implementation, although it is slightly faster. Probably there is
+room for improving the performance of my current version (using a transient map, as `frequencies` does), or a nicer way
+of using frequencies (my way of handling sections, and processing the files one line at a time didn't help here),
+but indexing is already fairly fast, and I didn't have time to try to improve it any more.
+
+## Stop Words
+
+I think it's common for search engines to remove stop words before indexing (and from search queries), so I found a list
+online and did the same.
+
+## Plurals
+
+A real search engine would handle this much better (using stemming or lemmaization), but I think just naively guessing
+at if a word might be singular or plural by the presence or absence of an 's' at the end, and naively guessing at how to
+make these plural or singlar by adding or removing an 's', and then indexing these as well improves how relevant the
+results are. E.g. if I search for "carrots", I want something with "Carrot Soup" in the title to score well.
+
+## Weightings
+
+I decided to give the highest score to words found in the title (as these ought to be the most important), and also to
+score words found in the ingredients slightly higher than words found in the other parts of the body. I did this because
+I thought there may be false positives elsewhere. E.g. I can imagine an introduction that says "Are you fed up of having
+sandwiches for lunch, then try this amazing soup!" or an method that says "Peel the carrots with a potato peeler." In
+these two examples, neither sandwiches or potatoes are very relevant to the recipe.
 
