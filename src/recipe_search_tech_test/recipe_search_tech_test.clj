@@ -19,19 +19,21 @@
   "Returns a map from the section heading text to the section keys.
   e.g. \"Introduction:\" -> :introduction"
   []
-  (into {} (map (juxt #(-> %
-                           name
-                           str/capitalize
-                           (str ":"))
-                      identity))
-        (keys section-weightings)))
+  (letfn [(section->heading [section]
+            (-> (name section)
+                str/capitalize
+                (str ":")))]
+    (into {} (map (juxt section->heading
+                        identity))
+          (keys section-weightings))))
 
 (defn- index-line
   "Add the words in a line to the index, based on the current file and section (title, introduction, etc)."
   [index file section line]
-  (let [filename (.getName file)]
+  (let [filename (.getName file)
+        update-score (partial + (section-weightings section))]
     (reduce (fn [idx word]
-              (update-in idx [(normalise word) filename] (fnil (partial + (section-weightings section)) 0)))
+              (update-in idx [word filename] (fnil update-score 0)))
             index
             (-> line
                 text/parse-text
