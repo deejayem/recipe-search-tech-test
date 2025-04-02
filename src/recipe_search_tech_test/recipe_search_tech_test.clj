@@ -11,19 +11,27 @@
    :ingredients 2
    :method 1})
 
-;; TODO could these two maps be combined?
-(def ^:private section-headings
-  {"Introduction:" :introduction
-   "Ingredients:" :ingredients
-   "Method:" :method})
+;; The section headings are predictable, otherwise we could create a more complex map
+;; with the weightings and headings for each section.
+;; The map returnign will contain :title, the heading for which does not appear in the
+;; recipes (as it's just the first line), but having it in the map doesn't do any harm.
+(defn- get-section-headings
+  "Returns a map from the section heading strings to the section keys."
+  []
+  (into {} (map (juxt #(-> %
+                           name
+                           str/capitalize
+                           (str ":"))
+                      identity))
+        (keys section-weightings)))
 
 (defn- normalise
   "Convert a search term into a normalised form."
   [word]
   (-> word
       str/lower-case
-      ;; remove ' from the beginning or end of a word, and 's from the end
-      ;; (' should be the only non-alphanumeric character left after splitting)
+      ;; Remove ' from the beginning or end of a word, and 's from the end.
+      ;; ' should be the only non-alphanumeric character left after splitting.
       (str/replace #"^'|'$|'s$" "")))
 
 (defn- add-opposite-pluralities
@@ -58,13 +66,14 @@
   "Index a file."
   [index file]
   (with-open [rdr (io/reader file)]
-    (first (reduce (fn [[idx section] line]
-                     (if-let [new-section (section-headings line)]
-                       ;; Don't index the headings, but use the new section for the next line
-                       [idx new-section]
-                       [(index-line idx file section line) section]))
-                   [index :title]
-                   (line-seq rdr)))))
+    (let [section-headings (get-section-headings)]
+      (first (reduce (fn [[idx section] line]
+                       (if-let [new-section (section-headings line)]
+                         ;; Don't index the headings, but use the new section for the next line
+                         [idx new-section]
+                         [(index-line idx file section line) section]))
+                     [index :title]
+                     (line-seq rdr))))))
 
 ;; TODO move to separate ns? (E.g. index?)
 ;; TODO apply the sum in the index?
