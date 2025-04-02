@@ -1,112 +1,7 @@
 (ns recipe-search-tech-test.recipe-search-tech-test
   (:gen-class)
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [recipe-search-tech-test.text :as text]))
-
-(def ^:private section-weightings
-  {:title 20
-   :introduction 1
-   ;; Score ingredients more highly, as there is less chance of false positives here
-   :ingredients 2
-   :method 1})
-
-;; The section headings are predictable, otherwise we could create a more complex map
-;; with the weightings and headings for each section.
-;; The map returned will contain :title, the heading for which does not appear in the
-;; recipes (as it's just the first line), but having it in the map doesn't do any harm.
-(defn- get-section-headings
-  "Returns a map from the section heading text to the section keys.
-  e.g. \"Introduction:\" -> :introduction"
-  []
-  (letfn [(section->heading [section]
-            (-> (name section)
-                str/capitalize
-                (str ":")))]
-    (into {} (map (juxt section->heading
-                        identity))
-          (keys section-weightings))))
-
-(defn- index-line
-  "Add the words in a line to the index, based on the current file and section (title, introduction, etc)."
-  [index file section line]
-  (let [filename (.getName file)
-        update-score (partial + (section-weightings section))]
-    (reduce (fn [idx word]
-              (update-in idx [word filename] (fnil update-score 0)))
-            index
-            (-> line
-                text/parse-text
-                text/add-opposite-pluralities))))
-
-(defn- index-file
-  "Index a file."
-  [index file]
-  (with-open [rdr (io/reader file)]
-    (let [section-headings (get-section-headings)]
-      (first (reduce (fn [[idx section] line]
-                       (if-let [new-section (section-headings line)]
-                         ;; Don't index the headings, but use the new section for the next line
-                         [idx new-section]
-                         [(index-line idx file section line) section]))
-                     [index :title]
-                     (line-seq rdr))))))
-
-;; TODO move to separate ns? (E.g. index?)
-(defn build-index
-  "Build an index, from all of the files in the resources/recipes directory.
-
-  The index is a nested map, with the outer keys being in the recipes, the keys of the inner map being the filenames
-  (recipe ids), and the values being the score for that word in that file, e.g.
-  {\"stilton\" {\"broccoli-soup-with-stilton.txt\" 24}}"
-  []
-  (let [recipe-files (.listFiles (io/file "resources/recipes"))]
-    (reduce (fn [idx file]
-              (index-file idx file))
-            {}
-            recipe-files)))
-
-(defn- sorted-map-by-value
-  "Converts into a sorted map, sorted by value, and then key."
-  [m]
-  (into (sorted-map-by (fn [key1 key2]
-                         (compare [(get m key2) key2]
-                                  [(get m key1) key1])))
-        m))
-
-;; TODO move to separate ns? (E.g. search?)
-(defn search
-  "Performs a search for `query` in `index`"
-  [index query]
-  (let [terms (text/parse-text query)
-        candidates (->> terms
-                        (map index)
-                        (apply merge-with +))]
-    (->> candidates
-         sorted-map-by-value
-         keys
-         (take 10))))
-
-(defn- handle-search
-  "Handler function for searches."
-  [index query]
-  (let [results (search index query)]
-    (if (empty? results)
-      (println "No results found")
-      (do (println "Top" (count results) "results:")
-          (doseq [result results]
-            (println result))))
-    (println ""))
-  index)
-
-(defn- handle-build-index
-  "Handler function for building an index."
-  []
-  (print "Building index... ")
-  (flush)
-  (let [index (build-index)]
-    (println " done.\n")
-    index))
+  (:require [clojure.string :as str]
+            [recipe-search-tech-test.index :as index]))
 
 (defn- get-user-input
   "Reads user input from the terminal."
@@ -121,6 +16,27 @@
   (println "  search <query> - search for query (e.g. search broccoli stilton soup)")
   (println "  reindex - rebuilds the search index (in case new recipes have been added)")
   (println "  help - display this help message\n"))
+
+(defn- handle-search
+  "Handler function for searches."
+  [index query]
+  (let [results (index/search index query)]
+    (if (empty? results)
+      (println "No results found")
+      (do (println "Top" (count results) "results:")
+          (doseq [result results]
+            (println result))))
+    (println ""))
+  index)
+
+(defn- handle-build-index
+  "Handler function for building an index."
+  []
+  (print "Building index... ")
+  (flush)
+  (let [index (index/build-index)]
+    (println " done.\n")
+    index))
 
 (defn- handle-help
   "Handler function for printing the help message."
@@ -152,7 +68,7 @@
   [index input]
   (let [[_ command args] (re-matches #"(\w+)\s*(.*)" input)]
     (case command
-      ;; rebuilding from scratch is quick, otherwise we could just add the new files
+      ;; rebuilding from scratch is quick, otherwise we could just index the new files
       "reindex" (handle-build-index)
       "search" (handle-search index args)
       "help"  (handle-help index)
@@ -168,19 +84,33 @@
 
 (comment
 
-  (def small-index {"cheese" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 3}
-                              "bar.txt" {:title 1 :ingredients 1 :introduction 1 :method 10}}
-                    "pasta" {"foo.txt" {:title 1 :ingredients 1 :introduction 1 :method 5}
-                             "bar.txt" {:title 1 :ingredients 1 :introduction 1 :method 2}}
-                    "pesto" {"baz.txt" {:title 0 :ingredients 1 :introduction 0 :method 1}}})
+  ;; See timings belong, for ten runs of each function
+  ;; (not as good as using a proper benchmarking tool, but sufficient to give some idea of performance)
 
-  (time (def big-index (build-index)))
+  (time (def an-index (index/build-index)))
+  ;; Some example times on an old, slow laptop:
+  ;; "Elapsed time: 2453.467321 msecs"
+  ;; "Elapsed time: 2437.6425 msecs"
+  ;; "Elapsed time: 2471.313783 msecs"
+  ;; "Elapsed time: 2447.307504 msecs"
+  ;; "Elapsed time: 2458.028332 msecs"
+  ;; "Elapsed time: 2436.143466 msecs"
+  ;; "Elapsed time: 2422.639322 msecs"
+  ;; "Elapsed time: 2467.106305 msecs"
+  ;; "Elapsed time: 2520.03456 msecs"
+  ;; "Elapsed time: 2489.00808 msecs"
 
-  (score-term small-index "cheese")
-  (score-term big-index "cheese")
-
-  (search small-index "cheese pasta")
-  (search big-index "cheese pasta")
-  (time (search big-index "broccoli stilton soup"))
+  (time (index/search an-index "broccoli stilton soup"))
+  ;; Some example times on an old, slow laptop:
+  ;; "Elapsed time: 2.981324 msecs"
+  ;; "Elapsed time: 1.680834 msecs"
+  ;; "Elapsed time: 2.13902 msecs"
+  ;; "Elapsed time: 1.454338 msecs"
+  ;; "Elapsed time: 1.504322 msecs"
+  ;; "Elapsed time: 1.260686 msecs"
+  ;; "Elapsed time: 1.181287 msecs"
+  ;; "Elapsed time: 1.180477 msecs"
+  ;; "Elapsed time: 1.156572 msecs"
+  ;; "Elapsed time: 1.154327 msecs"
 
   )
