@@ -11,6 +11,12 @@
    :ingredients 2
    :method 1})
 
+;; TODO could these two maps be combined?
+(def ^:private section-headings
+  {"Introduction:" :introduction
+   "Ingredients:" :ingredients
+   "Method:" :method})
+
 (defn- normalise
   "Convert a search term into a normalised form."
   [word]
@@ -53,10 +59,9 @@
   [index file]
   (with-open [rdr (io/reader file)]
     (first (reduce (fn [[idx section] line]
-                     (case line
-                       "Introduction:" [idx :introduction]
-                       "Ingredients:" [idx :ingredients]
-                       "Method:" [idx :method]
+                     (if-let [new-section (section-headings line)]
+                       ;; Don't index the headings, but use the new section for the next line
+                       [idx new-section]
                        [(index-line idx file section line) section]))
                    [index :title]
                    (line-seq rdr)))))
