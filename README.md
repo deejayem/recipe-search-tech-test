@@ -68,18 +68,19 @@ online and did the same.
 
 ## Plurals
 
-A real search engine would handle this much better (using stemming or lemmatization), but I think just naively guessing
-whether a word might be singular or plural by the presence or absence of an 's' at the end, and naively guessing at how
-to make these plural or singular by adding or removing an 's', and then indexing these as well improves how relevant the
-results are. E.g. if I search for "carrots", I want something with "Carrot Soup" in the title to score well. It does
-mean that nonexistent words will be added to the index, but they shouldn't cause any problems.
+A real search engine would handle this much better (using stemming or lemmatization), but the naive approach taken here
+should still improve how relevant the results are. It works by guessing if words are singular or plural, based on the
+presence of absence of an 's' at the end. Then singular words are made plural by adding an 's', and plural words are
+made singular by removing the 's'. Both words are then indexed. This means that if I search for "carrots", then a
+recipe with "Carrot Soup" in the title will score well. It does mean that nonexistent words will be added to the index,
+but they shouldn't cause any problems.
 
 ## Weightings
 
 I decided to give the highest score to words found in the title (as these ought to be the most important), and also to
 score words found in the ingredients slightly higher than words found in the other parts of the body. I did this because
 I thought there may be false positives elsewhere. E.g. I can imagine an introduction that says "Are you fed up of having
-sandwiches for lunch, then try this amazing soup!" or a method that says "Peel the carrots with a potato peeler." In
+sandwiches for lunch? Then try this amazing soup!" or a method that says "Peel the carrots with a potato peeler." In
 these two examples, sandwiches and potatoes are not relevant to the recipes.
 
 ## Updating the index
