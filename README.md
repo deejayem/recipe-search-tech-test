@@ -70,7 +70,7 @@ online and did the same.
 
 A real search engine would handle this much better (using stemming or lemmatization), but the naive approach taken here
 should still improve how relevant the results are. It works by guessing if words are singular or plural, based on the
-presence of absence of an 's' at the end. Then singular words are made plural by adding an 's', and plural words are
+presence or absence of an 's' at the end. Then singular words are made plural by adding an 's', and plural words are
 made singular by removing the 's'. Both words are then indexed. This means that if I search for "carrots", then a
 recipe with "Carrot Soup" in the title will score well. It does mean that nonexistent words will be added to the index,
 but they shouldn't cause any problems.
