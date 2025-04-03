@@ -6,15 +6,19 @@ Solution to the Recipe Search test, by David Morgan
 
 The simplest way to run the application is to execute the following at the command line (in the repo's directory):
 
+```
   $ clojure -X:run
+```
 
 Then you can search using `search <search query>` and exit using `exit`, as well as using the other commands
 explained in the initial help message. See also the [Examples section](#Examples) below.
 
 Alternatively, you can build and run an uberjar:
 
+```
   $ clojure -T:build ci
   $ java -jar target/net.clojars.recipe-search-tech-test/recipe-search-tech-test-0.1.0-SNAPSHOT.jar
+```
 
 Or run `(-main)` in a REPL in the `recipe-search-tech-test` namespace, or call `index/build-index` and `index/search`
 in there, as shown in the `comment` block.
@@ -23,6 +27,7 @@ in there, as shown in the `comment` block.
 
 Here are some examples of searches being done in the application:
 
+```
   > search broccoli stilton soup
   Top 10 results:
   broccoli-soup-with-stilton.txt
@@ -43,6 +48,7 @@ Here are some examples of searches being done in the application:
 
   > search emacs
   No results found
+```
 
 ## Performance
 
