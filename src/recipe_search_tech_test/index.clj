@@ -50,7 +50,7 @@
                          ;; Don't index the headings, but use the new section for the next line
                          [idx new-section]
                          [(index-line idx file section line) section]))
-                     [index :title]
+                     [index :title] ; the first line is the title
                      (line-seq rdr))))))
 
 (defn build-index
