@@ -57,30 +57,9 @@ takes 1-3ms (but sometimes up to 8). See the `comment` block in `recipe-search-t
 
 ## Frequencies
 
-One obvious question about the implementation is, "Why I didn't use `clojure.core/frequencies`?" given that it seems the
-obvious choice for indexing the files.
-
-Here is an alternate implementation of `recipe-search-tech-test.index/index-line` that uses it:
-
-``` clojure
-(defn- index-line
-  [index file section line]
-  (let [filename (.getName file)
-        weighting (section-weightings section)]
-    (reduce-kv (fn [idx word score]
-                 (update-in idx [word filename] (fnil (partial + score) 0)))
-               index
-               (-> line
-                   text/parse-text
-                   text/add-opposite-pluralities
-                   frequencies
-                   (update-vals (partial * weighting))))))
-```
-
-I think this is less readable than the existing implementation. There is probably room for improving the performance
-of my current version (e.g. using a transient map, as `frequencies` does), or a nicer way of using frequencies (my way
-of handling sections, and processing the files one line at a time didn't help here), but indexing is already fairly
-fast, and I didn't have time to try to improve it any more.
+One way that the indexing could have been implemented is to use `frequencies` (from `clojure.core`), and then the
+weightings could have been applied using `update-vals`. However, when I implemented it this way, it was slightly
+slower than the current version.
 
 ## Stop Words
 
