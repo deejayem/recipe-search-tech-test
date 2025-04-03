@@ -52,8 +52,8 @@ Here are some examples of searches being done in the application:
 
 ## Performance
 
-On my laptop (an i5 from 2020!), indexing takes around 2-3 seconds, and searching for "broccoli stilton soup" usually
-takes 1-3ms (but sometimes up to 8). See the `comment` block in `recipe-search-tech-test` for examples.
+On my laptop (an i5 from 2020!), indexing takes just under one second, and searching for "broccoli stilton soup" usually
+takes 0.5-1.5ms (but sometimes slightly longer). See the `comment` block in `recipe-search-tech-test` for examples.
 
 ## Frequencies
 

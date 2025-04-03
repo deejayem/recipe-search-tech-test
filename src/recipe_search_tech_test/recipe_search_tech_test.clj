@@ -90,28 +90,28 @@
 
   (time (def an-index (index/build-index)))
   ;; Some example times on an old, slow laptop:
-  ;; "Elapsed time: 2108.824576 msecs"
-  ;; "Elapsed time: 2108.742155 msecs"
-  ;; "Elapsed time: 2144.322013 msecs"
-  ;; "Elapsed time: 2132.059525 msecs"
-  ;; "Elapsed time: 2154.572514 msecs"
-  ;; "Elapsed time: 2138.727177 msecs"
-  ;; "Elapsed time: 2140.101418 msecs"
-  ;; "Elapsed time: 2100.697533 msecs"
-  ;; "Elapsed time: 2137.617316 msecs"
-  ;; "Elapsed time: 2103.412155 msecs"
+  ;; "Elapsed time: 925.578265 msecs"
+  ;; "Elapsed time: 916.26918 msecs"
+  ;; "Elapsed time: 915.391461 msecs"
+  ;; "Elapsed time: 924.001262 msecs"
+  ;; "Elapsed time: 919.089405 msecs"
+  ;; "Elapsed time: 906.967371 msecs"
+  ;; "Elapsed time: 903.788762 msecs"
+  ;; "Elapsed time: 920.738829 msecs"
+  ;; "Elapsed time: 907.855198 msecs"
+  ;; "Elapsed time: 922.922689 msecs"
 
   (time (index/search an-index "broccoli stilton soup"))
   ;; Some example times on an old, slow laptop:
-  ;; "Elapsed time: 2.981324 msecs"
-  ;; "Elapsed time: 1.680834 msecs"
-  ;; "Elapsed time: 2.13902 msecs"
-  ;; "Elapsed time: 1.454338 msecs"
-  ;; "Elapsed time: 1.504322 msecs"
-  ;; "Elapsed time: 1.260686 msecs"
-  ;; "Elapsed time: 1.181287 msecs"
-  ;; "Elapsed time: 1.180477 msecs"
-  ;; "Elapsed time: 1.156572 msecs"
-  ;; "Elapsed time: 1.154327 msecs"
+  ;; "Elapsed time: 1.572801 msecs"
+  ;; "Elapsed time: 0.616983 msecs"
+  ;; "Elapsed time: 0.707118 msecs"
+  ;; "Elapsed time: 0.508767 msecs"
+  ;; "Elapsed time: 0.469181 msecs"
+  ;; "Elapsed time: 0.475034 msecs"
+  ;; "Elapsed time: 0.641663 msecs"
+  ;; "Elapsed time: 0.595414 msecs"
+  ;; "Elapsed time: 0.459915 msecs"
+  ;; "Elapsed time: 0.439509 msecs"
 
   )
